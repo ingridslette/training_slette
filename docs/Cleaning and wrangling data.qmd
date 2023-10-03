@@ -1,0 +1,132 @@
+---
+title: "Cleaning and wrangling data"
+format: html
+---
+
+## Set up
+```{r}
+#| warning: FALSE
+#| message: FALSE
+library(dplyr)
+library(tidyr)
+library(readr)
+```
+
+## Read data
+
+```{r}
+#| message: FALSE
+catch_original <- read_csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+```
+
+```{r}
+#| echo: false
+#| eval: false
+colnames(catch_original)
+summary(catch_original)
+head(catch_original)
+unique(catch_original$Region)
+```
+
+## Using `select()` to remove or select column
+
+```{r}
+catch_data <- catch_original %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+```
+
+Quality check using `glimpse()` (similar to `str()`)
+
+```{r}
+glimpse(catch_data)
+```
+
+Shows that the Chinook column read in as character string when it should be numeric.
+Override Chinook column using `mutate()` to force it to be numeric.
+
+```{r}
+catch_clean <- catch_data %>% 
+  mutate(Chinook = as.numeric(Chinook))
+```
+
+Get a warning that an NA was introduced by forcing column to be numeric (something wasn't numeric).
+Find out where the NA was introduced.
+
+```{r}
+i <- which(is.na(catch_clean$Chinook))
+i
+catch_data[i,]
+```
+
+There was a letter "I" instead of a number in one cell. 
+Replace it using `mutate()` and force column to be numeric.
+
+```{r}
+catch_clean <- catch_data %>% 
+  mutate(Chinook = if_else(condition = Chinook == "I",
+                           true = "1",
+                           false = Chinook),
+         Chinook = as.numeric(Chinook))
+
+glimpse(catch_clean)
+```
+
+## Reshaping DF with `pivot_longer()` and `pivot_wider()`
+
+```{r}
+catch_long <- catch_clean %>% 
+  pivot_longer(cols=-c(Region, Year),
+               names_to = "species",
+               values_to = "catch")
+head(catch_long)
+```
+
+## Renaming a column using `rename()`
+
+```{r}
+catch_long <- catch_long %>% 
+  rename(catch_thousand = catch)
+colnames(catch_long)
+```
+
+## Adding a column using `mutate()` and deleting another column using `select()`
+
+```{r}
+catch_long <- catch_long %>% 
+  mutate(catch = catch_thousand*1000) %>% 
+  select (-catch_thousand)
+
+head(catch_long)
+```
+
+## Using a 'Split-Apply-Combine' approach to get mean catch by region
+
+```{r}
+mean_region <- catch_long %>% 
+  group_by(Region) %>% 
+  summarize(mean_catch=mean(catch))
+
+head(mean_region)
+
+n_region <- catch_long %>% 
+  group_by(Region) %>% 
+  summarize(n=n())
+
+head(n_region)
+```
+
+## Using `filter()`
+
+```{r}
+sse_catch <- catch_long %>% 
+  filter(Region == "SSE")
+
+head(sse_catch)
+unique(sse_catch)
+
+sse_nse_catch <- catch_long %>% 
+  filter(Region %in% c("SSE", "NSE"))
+
+unique(sse_nse_catch)
+```
+
