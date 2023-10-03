@@ -29,13 +29,20 @@ taxalist <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=
 ## Explore data
 
 ```{r}
+#| echo: false
 glimpse(bird_observations)
+str(bird_observations)
 unique(bird_observations)
+head(bird_observations)
+summary(bird_observations)
 glimpse(surveys)
+head(surveys)
 glimpse(sites)
+head(sites)
 glimpse(taxalist)
+head(taxalist)
 ```
-## Subset bird observations table
+## Subset bird observations table (only species BHCO and RWBL and sites LI-W and NU-C)
 
 ```{r}
 birds_subset <- bird_observations %>% 
@@ -43,42 +50,45 @@ birds_subset <- bird_observations %>%
   filter(site_id %in% c("LI-W", "NU-C"))
 ```
 
-## Left join bird observations subset with sites
+## Left join bird observations subset with sites df
 
 ```{r}
+#| echo: false
+colnames(birds_subset)
+colnames(sites)
 birds_left <- birds_subset %>% 
   left_join(y = sites, by = "site_id")
 ```
 
-## Full join of bird observations subset and sites 
+## Full join bird observations subset and sites df
 
 ```{r}
 birds_full <- birds_subset %>% 
   full_join(y = sites, by = "site_id")
 ```
 
-## Inner join of bird observations subset and taxalist
+## Inner join bird observations subset and taxalist df
 
 ```{r}
 birds_inner <- birds_subset %>% 
   inner_join(y = taxalist, by = "species_id")
 ```
 
-## Left join of bird observations subset and taxalist
+## Left join bird observations subset and taxalist
 
 ```{r}
 birds_inner_left <- birds_subset %>% 
   left_join(y = taxalist, by = "species_id")
 ```
 
-## Remaning 'notes' column in bird observations 
+## Rename 'notes' column in bird observations (so doens't conflict with 'notes' column in surveys df)
 
 ```{r}
 bird_observations <- bird_observations %>% 
   rename(bird_obs_notes = notes)
 ```
 
-## Join sites, surveys, and taxalist to bird observations and keep only columns survey_date, common_name, park_name, bird_count, and observer
+## Join sites df, surveys df, and taxalist df to bird observations df and keep only the  survey_date, common_name, park_name, bird_count, and observer columns
 
 ```{r}
 bird_obs_subset <- bird_observations %>% 
@@ -89,11 +99,12 @@ bird_obs_subset <- bird_observations %>%
 ```
 
 ## Check values of observer
+
 ```{r}
 unique(bird_obs_subset$observer)
 ```
 
-## Change so all are formatted the same way 
+## Change so that all observer names are formatted the same way 
 
 ```{r}
 bird_obs_subset <- bird_obs_subset %>% 
