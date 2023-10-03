@@ -1,0 +1,53 @@
+---
+title: "Intro to Quarto"
+format: html
+bibliography: references.bib
+---
+
+# Header 1
+
+I'm going to **bold this text** here.
+
+And *italicize this text* here.
+
+And do ***both to this text*** here.
+
+[hyper link](https://nceas.ucsb.edu)
+
+## Header 2
+
+### Header 3
+
+#### Header 4
+
+Things that are nice to do in Visual mode (as opposed to Source mode)
+
+1)  Inserting citations (and generating a bibliography)
+
+-   This is a very important fact [@slette2019].
+
+-   As explained by @slette2019.
+
+2)  Inserting tables
+
+| Col1      | Col2   | Col3   |
+|-----------|--------|--------|
+| element 1 | bla    | blah   |
+| element 2 | lala   | lah    |
+| element 3 | lalala | lahlah |
+
+## Code chunks
+
+```{r}
+#| echo: false
+x <- 4*8
+
+height_vec <- c(5.2, 6.0, 5.7)
+
+x
+
+height_vec
+```
+
+
+
