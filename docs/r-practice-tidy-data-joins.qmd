@@ -10,7 +10,7 @@ format: html
 #| message: FALSE
 library(readr)
 library(dplyr)
-library(lubridate) # for bonus question
+library(lubridate)
 ```
 
 ## Read data
