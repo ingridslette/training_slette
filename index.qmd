@@ -6,7 +6,7 @@ format: html
 ## Course lessons
 - [Intro to literate analysis](docs/Mini Literate Analysis.html)
 - [Cleaning and wrangling data](docs/Cleaning and wrangling data.html)
-- Data viz
+- [Data viz](docs/Data visualization.html)
 - Functions and packages
 
 ## Practice sessions

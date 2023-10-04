@@ -1,0 +1,185 @@
+---
+title: "Data Visualization"
+format: html
+---
+
+## Set up
+```{r}
+#| warning: false
+#| message: false
+library(readr)
+library(dplyr)
+library(tidyr)
+library(forcats) # makes working with factors easier
+library(ggplot2)
+library(leaflet) # interactive maps
+library(DT) # interactive tables
+library(scales) # scale functions for visualization
+library(janitor) # expedite cleaning and exploring data
+library(viridis) # colorblind friendly color pallet
+```
+
+## Read data
+```{r}
+#| message: false
+#| warning: false
+delta_visits_raw <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.587.1&entityid=cda8c1384af0089b506d51ad8507641f")
+```
+
+## Explore data
+```{r}
+## Check out column names
+colnames(delta_visits_raw)
+
+## Use `clean_names()` from janitor package to clean/standardize column names
+delta_visits <- delta_visits_raw %>% 
+  clean_names()
+
+colnames(delta_visits)
+
+## Peak at each column and class
+glimpse(delta_visits)
+
+## From when to when
+range(delta_visits$date)
+
+## Which time of day?
+unique(delta_visits$time_of_day)
+```
+
+## Cleaning and organizing data
+```{r}
+visit_long <- delta_visits %>% 
+  pivot_longer(cols = c("sm_boat", "med_boat", "lrg_boat", "bank_angler", "scientist", "cars"),
+               names_to = "visitor_type",
+               values_to = "quantity") %>% 
+  rename(restore_loc = eco_restore_approximate_location) %>% 
+  select(-notes)
+```
+
+## Calculating daily visits by location
+```{r}
+daily_visits_loc <- visit_long %>%
+    group_by(restore_loc, date, visitor_type) %>% 
+    summarise(daily_visits = sum(quantity))
+    
+head(daily_visits_loc)
+```
+
+## Plotting with `ggplot2()`
+```{r}
+ggplot(data = daily_visits_loc,
+       aes(x = restore_loc,
+           y = daily_visits)) +
+  geom_col()
+
+```
+
+```{r}
+daily_visits_loc %>% 
+  separate(date, c("year", "month", "day"), sep = "-") %>% 
+  filter(daily_visits < 30,
+         visitor_type %in% c("sm_boat", "med_boat", "lrg_boat")) %>% 
+  ggplot(aes(x = visitor_type,
+             y = daily_visits)) +
+  geom_boxplot()
+```
+
+## Customizing plot
+Inside aes = related to data, outside = related to presentation of that data
+```{r}
+ggplot(daily_visits_loc,
+       aes(x = restore_loc,
+           y = daily_visits)) +
+  geom_col(fill = "blue")
+```
+
+```{r}
+ggplot(daily_visits_loc,
+       aes(x = restore_loc,
+           y = daily_visits,
+           fill = visitor_type)) +
+  geom_col() +
+  labs(x = "Restoration Location", 
+       y = "Number of Visits",
+       fill = "Type of Visitor",
+       title = "Total Visitors to Restoration Site",
+       subtitle = "Sum of daily visits during study period") +
+  coord_flip() +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        axis.ticks.y = element_blank()) +
+  scale_y_continuous(breaks = seq(0, 120, 20)) +
+  scale_fill_viridis_d()
+
+## Saving plot
+ggsave("../figures/visits_restore_loc_delta.png", width = 12, height = 6, units = "in")
+```
+
+## Interactive visualizations
+`DT` package for interactive tables
+```{r}
+locations <- visit_long %>% 
+  distinct(restore_loc, .keep_all = TRUE) %>% 
+  select(restore_loc, latitude, longitude)
+```
+
+```{r}
+datatable(locations)
+```
+
+Interactive maps with `leaflet`
+```{r}
+leaflet(locations) %>% 
+  addTiles() %>% 
+  addMarkers(lng = ~longitude,
+             lat = ~latitude,
+             popup = ~restore_loc)
+```
+
+```{r}
+leaflet(locations) %>%
+    addWMSTiles(
+        "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer",
+        layers = "0",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE)) %>%
+    addCircleMarkers(
+        lng = ~ longitude,
+        lat = ~ latitude,
+        popup = ~ restore_loc,
+        radius = 5,
+        # set fill properties
+        fillColor = "salmon",
+        fillOpacity = 1,
+        # set stroke properties
+        stroke = T,
+        weight = 0.5,
+        color = "white",
+        opacity = 1)
+```
+
+```{r}
+leaflet(locations) %>%
+    addWMSTiles(
+        "https://basemap.nationalmap.gov/arcgis/services/USGSImageryTopo/MapServer/WmsServer",
+        layers = "0",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE)) %>%
+    addWMSTiles(
+        "https://basemap.nationalmap.gov/arcgis/services/USGSHydroCached/MapServer/WmsServer",
+        layers = "0",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE)) %>%
+    addCircleMarkers(
+        lng = ~ longitude,
+        lat = ~ latitude,
+        popup = ~ restore_loc,
+        radius = 5,
+        # set fill properties
+        fillColor = "salmon",
+        fillOpacity = 1,
+        # set stroke properties
+        stroke = T,
+        weight = 0.5,
+        color = "white",
+        opacity = 1)
+```
+
