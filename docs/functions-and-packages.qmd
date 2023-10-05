@@ -1,0 +1,38 @@
+---
+title: "Functions and Packages"
+format: html
+---
+
+```{r}
+airtemps <- c(212, 30.3, 78, 32)
+```
+
+```{r}
+fahr_to_celsius <- function(fahr){
+  celsius <- (fahr - 32) * 5/9
+  return(celsius)
+}
+```
+
+```{r}
+# using fahr_to_celcius function to convert airtemps
+fahr_to_celsius(airtemps)
+fahr_to_celsius(airtemps[1])
+airtemps_cels <- fahr_to_celsius(airtemps)
+```
+
+```{r}
+celsius_to_fahr <- function(celsius){
+  fahr <- celsius * 9/5 + 32
+  return(fahr)
+}
+
+airtemps_fahr <- celsius_to_fahr(airtemps_cels)
+
+airtemps == airtemps_fahr
+```
+
+```{r}
+source("../Rscripts/fahr_to_celsius.R")
+```
+
