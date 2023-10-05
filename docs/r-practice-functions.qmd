@@ -1,0 +1,99 @@
+---
+title: "R Practice: Functions"
+format: html
+---
+
+### Write function `double_it()` to double any number
+```{r}
+double_it <- function(x){
+  print(2*x)
+}
+
+double_it(12)
+```
+
+### Write funtion `exclaim_age()` to output "I am __ years old!"
+```{r}
+exclaim_age <- function(age) {
+  print(paste("I am", age, "years old!"))
+}
+
+exclaim_age(30)
+```
+
+# Wrtie `find_max()` function to return the max value of two values
+```{r}
+find_max <- function(value_1, value_2) {
+    
+    if (value_1 > value_2) {
+        return(value_1)
+    }
+    else if (value_2 > value_1) {
+        return(value_2)
+    }
+}
+
+find_max(5, 2)
+```
+
+### Learning about adding error messages using `find_max()` function 
+```{r}
+#| echo:false
+find_max(4, 2, 5)
+
+# "Error in find_max(4, 2, 5) : unused argument (5)"
+# because only takes two numbers
+```
+
+```{r}
+find_max(4, 4)
+# no value returned and no error message
+
+# add error message to `find_max()` function
+find_max <- function(value_1, value_2) {
+    
+    if (value_1 == value_2) {
+        stop("Values must be different from each other.")
+    }
+    
+    if (value_1 > value_2) {
+        return(value_1)
+    }
+    else if (value_2 > value_1) {
+        return(value_2)
+    }
+}
+
+
+#| echo:false
+find_max(4, 4)
+```
+
+```{r}
+find_max(4, "cow")
+
+# returns "cow" - add a logic check that requires numeric values
+find_max <- function(value_1, value_2) {
+  
+    if (is.numeric(value_1) == FALSE | is.numeric(value_2) == FALSE) {
+        stop("Values must be numeric.")
+    }
+    
+    if (value_1 == value_2) {
+        stop("Values must be different from each other.")
+    }
+    
+    if (value_1 > value_2) {
+        return(value_1)
+    }
+    else if (value_2 > value_1) {
+        return(value_2)
+    }
+}
+
+#find_max(4, "cow")
+
+#find_max("cow", 4)
+```
+
+
